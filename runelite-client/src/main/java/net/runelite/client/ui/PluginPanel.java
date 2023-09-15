@@ -35,7 +35,7 @@ import lombok.Getter;
 
 public abstract class PluginPanel extends JPanel
 {
-	public static final int PANEL_WIDTH = 225;
+	public static final int PANEL_WIDTH = 300;
 	public static final int SCROLLBAR_WIDTH = 17;
 	public static final int BORDER_OFFSET = 6;
 	private static final EmptyBorder BORDER_PADDING = new EmptyBorder(BORDER_OFFSET, BORDER_OFFSET, BORDER_OFFSET, BORDER_OFFSET);
