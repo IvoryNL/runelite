@@ -170,7 +170,6 @@ public class SelectPotionsPanel extends PluginPanel
         scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane.setPreferredSize(null);
         scrollPane.setMinimumSize(new Dimension(0, 0));
-
         return scrollPane;
     }
 
