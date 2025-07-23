@@ -4,9 +4,9 @@ public class ItemPrice
 {
     public int high;
 
-    public long highTime;
+//    public long highTime;
 
     public int low;
 
-    public long lowTime;
+//    public long lowTime;
 }
