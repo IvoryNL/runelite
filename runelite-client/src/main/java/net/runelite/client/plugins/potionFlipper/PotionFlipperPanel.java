@@ -204,12 +204,12 @@ public class PotionFlipperPanel extends PluginPanel
         return potionPanel;
     }
 
-    private static JPanel getJPanelPotion(String potionName, ItemPrice itemPrice)
+    private static JPanel getJPanelPotion(String potionName, ItemPrice ItemPrice)
     {
         JPanel potionPanel = new JPanel();
         JLabel potionLabel = new JLabel(potionName + ": ");
         potionLabel.setForeground(Color.WHITE);
-        JLabel priceLabel = new JLabel(itemPrice.high + "GP");
+        JLabel priceLabel = new JLabel(ItemPrice.low + "GP");
         priceLabel.setForeground(Color.WHITE);
         potionPanel.add(potionLabel);
         potionPanel.add(priceLabel);
@@ -235,7 +235,7 @@ public class PotionFlipperPanel extends PluginPanel
 
     private ItemPrice getDataById(int id) throws IOException
     {
-        String url = "https://prices.runescape.wiki/api/v1/osrs/latest";
+        String url = "https://prices.runescape.wiki/api/v1/osrs/latest?id=";
         String json = httpService.getById(id, url);
 
         return getFromJson(json);
@@ -243,10 +243,9 @@ public class PotionFlipperPanel extends PluginPanel
 
     private ItemPrice getFromJson(String json)
     {
-        var response = gson.fromJson(json, ItemResponse.class);
-        String osrsWikiITemDataString = response.getData().values().iterator().next().toString();
+        var response = gson.fromJson(json, ItemPriceResponse.class);
 
-        return gson.fromJson(osrsWikiITemDataString, ItemPrice.class);
+        return response.data.values().iterator().next();
     }
 
     private Map<String, ArrayList<ItemInfo>> CreateMapping()
@@ -269,16 +268,16 @@ public class PotionFlipperPanel extends PluginPanel
 
     private int calculateProfit3To4(ItemPrice threeDose, ItemPrice fourDose)
     {
-        int priceFourDoseTaxDeducted = (int)(fourDose.high / 1.01);
-        int priceThreeDoseTimesToFourDoses = threeDose.high / 3 * 4;
+        int priceFourDoseTaxDeducted = (int)(fourDose.low / 1.01);
+        int priceThreeDoseTimesToFourDoses = threeDose.low / 3 * 4;
 
         return priceFourDoseTaxDeducted - priceThreeDoseTimesToFourDoses;
     }
 
     private int calculateProfit4To3(ItemPrice fourDose, ItemPrice threeDose)
     {
-        int priceThreeDoseTaxDeducted = (int)(threeDose.high / 1.01);
-        int priceFourDoseTimesToFourDoses = fourDose.high / 4 * 3;
+        int priceThreeDoseTaxDeducted = (int)(threeDose.low / 1.01);
+        int priceFourDoseTimesToFourDoses = fourDose.low / 4 * 3;
 
         return priceThreeDoseTaxDeducted - priceFourDoseTimesToFourDoses;
     }

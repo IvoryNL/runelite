@@ -25,7 +25,7 @@ public class HttpService implements IHttpService
     @Override
     public String getById(int id, String url) throws IOException
     {
-        return getResponse(url + "?id=" + id);
+        return getResponse(url + id);
     }
 
     private String getResponse(String url) throws IOException
