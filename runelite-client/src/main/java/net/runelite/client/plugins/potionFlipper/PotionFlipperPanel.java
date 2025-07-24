@@ -117,7 +117,6 @@ public class PotionFlipperPanel extends PluginPanel
     }
 
 
-
     private JPanel buildSelectPotionsPanel()
     {
         selectPotionsPanel.setSelectionListener(selected ->
