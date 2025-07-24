@@ -2,7 +2,6 @@ package net.runelite.client.plugins.potionFlipper;
 
 import com.google.gson.Gson;
 import com.google.inject.Provides;
-import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
@@ -25,7 +24,6 @@ import java.awt.image.BufferedImage;
         description = "Enable the Potion Flipper panel",
         tags = {"panel"}
 )
-@Slf4j
 public class PotionFlipperPlugin extends Plugin
 {
     @Inject
@@ -42,7 +40,7 @@ public class PotionFlipperPlugin extends Plugin
     @Override
     protected void startUp() throws Exception
     {
-        final BufferedImage icon = ImageUtil.loadImageResource(getClass(), "herblore.png");
+        final var icon = ImageUtil.loadImageResource(getClass(), "herblore.png");
 
         navPotionFlipper = NavigationButton.builder()
                 .tooltip("Potion Flipper")
