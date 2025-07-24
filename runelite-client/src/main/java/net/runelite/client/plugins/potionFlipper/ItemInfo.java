@@ -5,4 +5,6 @@ public class ItemInfo
     public int id;
 
     public String name;
+
+    public String examine;
 }

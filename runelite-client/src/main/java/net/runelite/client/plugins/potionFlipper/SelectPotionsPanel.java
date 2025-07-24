@@ -160,7 +160,7 @@ public class SelectPotionsPanel extends PluginPanel
 
     private ArrayList<ItemInfo> getData() throws IOException
     {
-        String url = "https://www.osrsbox.com/osrsbox-db/items-summary.json";
+        String url = "https://prices.runescape.wiki/api/v1/osrs/mapping";
         String json = httpService.getAll(url);
 
         return getFromJson(json);
@@ -168,12 +168,12 @@ public class SelectPotionsPanel extends PluginPanel
 
     private ArrayList<ItemInfo> getFromJson(String json)
     {
-        Type itemListType = new TypeToken<Map<Integer, ItemInfo>>(){}.getType();
-        Map<Integer, ItemInfo> response = gson.fromJson(json, itemListType);
+        Type itemListType = new TypeToken<ArrayList<ItemInfo>>(){}.getType();
+        ArrayList<ItemInfo> response = gson.fromJson(json, itemListType);
 
-        return response.values().stream()
+        return response.stream()
                 .filter(item -> item.name != null
-                        && item.name.toLowerCase().contains("potion")
+                        && item.examine.toLowerCase().contains("potion")
                         && (item.name.toLowerCase().contains("(3)") || item.name.toLowerCase().contains("(4)")))
                 .sorted(Comparator.comparing(
                         item -> item.name,
