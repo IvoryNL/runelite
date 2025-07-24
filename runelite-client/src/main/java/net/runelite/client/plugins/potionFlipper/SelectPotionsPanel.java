@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.google.gson.reflect.TypeToken;
@@ -29,7 +28,8 @@ public class SelectPotionsPanel extends PluginPanel
     private ISelectionListener<ItemInfo> listener;
 
     @Inject
-    public SelectPotionsPanel(Gson gson, IHttpService httpService, ISelectedPotionsService selectedPotionsService) throws IOException {
+    public SelectPotionsPanel(Gson gson, IHttpService httpService, ISelectedPotionsService selectedPotionsService) throws IOException
+    {
         super();
 
         this.gson = gson;
@@ -51,7 +51,7 @@ public class SelectPotionsPanel extends PluginPanel
 
     private JPanel buildSelectPotionPanel()
     {
-        JPanel layoutPanel = new JPanel();
+        var layoutPanel = new JPanel();
         layoutPanel.setBackground(ColorScheme.DARKER_GRAY_COLOR);
         layoutPanel.setLayout(new BoxLayout(layoutPanel, BoxLayout.Y_AXIS));
 
@@ -64,8 +64,9 @@ public class SelectPotionsPanel extends PluginPanel
         return layoutPanel;
     }
 
-    private JButton getDoneButton() {
-        JButton done = new JButton("Done");
+    private JButton getDoneButton()
+    {
+        var done = new JButton("Done");
         done.setToolTipText("Finish selecting potions");
         done.setBackground(ColorScheme.MEDIUM_GRAY_COLOR);
         done.setForeground(Color.WHITE);
@@ -80,16 +81,26 @@ public class SelectPotionsPanel extends PluginPanel
         return done;
     }
 
-    private JList<ItemInfo> getItemInfoJList() throws IOException {
-        final JList<ItemInfo> allPotions;
-        ArrayList<ItemInfo> items = getData();
+    private JList<ItemInfo> getItemInfoJList() throws IOException
+    {
+        final var items = getData();
+        final var allPotions = GetList(items);
+
+        setListStyling(allPotions);
+
+        return allPotions;
+    }
+
+    private JList<ItemInfo> GetList(ArrayList<ItemInfo> items)
+    {
+        var allPotions = new JList<ItemInfo>();
         allPotions = new JList<>(items.toArray(ItemInfo[]::new));
         allPotions.setCellRenderer((JList<? extends ItemInfo> list,
                                     ItemInfo value,
                                     int index,
                                     boolean isSelected,
                                     boolean cellHasFocus) -> {
-            JLabel lbl = new JLabel(value.name + ": " + value.id);
+            var lbl = new JLabel(value.name + ": " + value.id);
 
             if (isSelected) {
                 lbl.setBackground(ColorScheme.LIGHT_GRAY_COLOR);
@@ -103,6 +114,11 @@ public class SelectPotionsPanel extends PluginPanel
             return lbl;
         });
 
+        return allPotions;
+    }
+
+    private void setListStyling(JList<ItemInfo> allPotions)
+    {
         allPotions.setSelectionModel(new DefaultListSelectionModel()
         {
             @Override
@@ -127,16 +143,14 @@ public class SelectPotionsPanel extends PluginPanel
 
         allPotions.setBackground(ColorScheme.DARKER_GRAY_COLOR);
         allPotions.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-
-        return allPotions;
     }
 
     private void setJListSelectedPotions()
     {
-        ArrayList<ItemInfo> selectedPotions = selectedPotionsService.getSelectedPotions();
+        var selectedPotions = selectedPotionsService.getSelectedPotions();
         if (selectedPotions != null && !selectedPotions.isEmpty())
         {
-            for (ItemInfo potion : selectedPotions)
+            for (var potion : selectedPotions)
             {
                 for (int i = 0; i < allPotions.getModel().getSize(); i++)
                 {
@@ -149,26 +163,28 @@ public class SelectPotionsPanel extends PluginPanel
         }
     }
 
-    private JScrollPane getJScrollPane() {
-        JScrollPane scrollPane = new JScrollPane(allPotions);
+    private JScrollPane getJScrollPane()
+    {
+        var scrollPane = new JScrollPane(allPotions);
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane.setPreferredSize(null);
         scrollPane.setMinimumSize(new Dimension(0, 0));
+
         return scrollPane;
     }
 
     private ArrayList<ItemInfo> getData() throws IOException
     {
-        String url = "https://prices.runescape.wiki/api/v1/osrs/mapping";
-        String json = httpService.getAll(url);
+        final var url = "https://prices.runescape.wiki/api/v1/osrs/mapping";
+        final var json = httpService.getAll(url);
 
         return getFromJson(json);
     }
 
     private ArrayList<ItemInfo> getFromJson(String json)
     {
-        Type itemListType = new TypeToken<ArrayList<ItemInfo>>(){}.getType();
+        var itemListType = new TypeToken<ArrayList<ItemInfo>>(){}.getType();
         ArrayList<ItemInfo> response = gson.fromJson(json, itemListType);
 
         return response.stream()
