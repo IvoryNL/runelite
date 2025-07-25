@@ -24,36 +24,7 @@ public class KillsRemainingPanel extends PluginPanel
 
         this.client = client;
 
-        var parent = getWrappedPanel();
-        parent.setLayout(new BorderLayout());
-        parent.setBackground(ColorScheme.DARK_GRAY_COLOR);
-
-        var layoutPanel = new JPanel();
-        layoutPanel.setLayout(new BoxLayout(layoutPanel, BoxLayout.Y_AXIS));
-        layoutPanel.setBackground(ColorScheme.DARK_GRAY_COLOR);
-
-        npcName = new JLabel("Name: ...");
-        npcName.setBackground(ColorScheme.DARKER_GRAY_COLOR);
-        npcName.setForeground(Color.WHITE);
-
-        npcMaxHp = new JLabel("Max HP: ...");
-        npcMaxHp.setBackground(ColorScheme.DARKER_GRAY_COLOR);
-        npcMaxHp.setForeground(Color.WHITE);
-
-        remainingXp = new JLabel("Remaining XP: ...");
-        remainingXp.setBackground(ColorScheme.DARKER_GRAY_COLOR);
-        remainingXp.setForeground(Color.WHITE);
-
-        remainingKills = new JLabel("Remaining Kills: ...");
-        remainingKills.setBackground(ColorScheme.DARKER_GRAY_COLOR);
-        remainingKills.setForeground(Color.WHITE);
-
-        layoutPanel.add(npcName);
-        layoutPanel.add(npcMaxHp);
-        layoutPanel.add(remainingXp);
-        layoutPanel.add(remainingKills);
-
-        parent.add(layoutPanel, BorderLayout.CENTER);
+        builtKillsRemainingPanel();
     }
 
     public void updateNpcName(String name)
@@ -77,5 +48,44 @@ public class KillsRemainingPanel extends PluginPanel
     public void updateRemainingKills(int remainingKills) {
         this.remainingKills.setText("Remaining Kills: " + remainingKills);
         repaint();
+    }
+
+    private void builtKillsRemainingPanel()
+    {
+        var parent = getWrappedPanel();
+        parent.setLayout(new BorderLayout());
+        parent.setBackground(ColorScheme.DARK_GRAY_COLOR);
+
+        var layoutPanel = new JPanel();
+        layoutPanel.setLayout(new BoxLayout(layoutPanel, BoxLayout.Y_AXIS));
+        layoutPanel.setBackground(ColorScheme.DARK_GRAY_COLOR);
+
+        createLabels();
+
+        layoutPanel.add(npcName);
+        layoutPanel.add(npcMaxHp);
+        layoutPanel.add(remainingXp);
+        layoutPanel.add(remainingKills);
+
+        parent.add(layoutPanel, BorderLayout.CENTER);
+    }
+
+    private void createLabels()
+    {
+        npcName = createLabel("Name: ...");
+        npcMaxHp = createLabel("Max HP: ...");
+        remainingXp = createLabel("Remaining XP: ...");
+        remainingKills = createLabel("Remaining Kills: ...");
+    }
+
+    private JLabel createLabel(String text)
+    {
+        var label = new JLabel(text);
+        label.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+        label.setForeground(Color.WHITE);
+        label.setBorder(BorderFactory.createEmptyBorder(10, 15, 0, 15));
+        label.setFont(label.getFont().deriveFont(Font.PLAIN, 18f));
+
+        return label;
     }
 }
