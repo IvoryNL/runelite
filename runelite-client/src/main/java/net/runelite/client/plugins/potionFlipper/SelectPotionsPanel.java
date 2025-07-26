@@ -189,7 +189,7 @@ public class SelectPotionsPanel extends PluginPanel
 
         return response.stream()
                 .filter(item -> item.name != null
-                        && item.examine.toLowerCase().contains("potion")
+                        && (item.examine.toLowerCase().contains("potion") || item.examine.toLowerCase().contains("brew"))
                         && (item.name.toLowerCase().contains("(3)") || item.name.toLowerCase().contains("(4)")))
                 .sorted(Comparator.comparing(
                         item -> item.name,

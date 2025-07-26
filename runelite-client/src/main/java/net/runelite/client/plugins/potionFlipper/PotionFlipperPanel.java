@@ -47,6 +47,7 @@ public class PotionFlipperPanel extends PluginPanel
     {
         var parent = getWrappedPanel();
         parent.setLayout(new BorderLayout());
+        parent.setBackground(ColorScheme.DARKER_GRAY_COLOR);
 
         buildCards();
 
@@ -80,10 +81,16 @@ public class PotionFlipperPanel extends PluginPanel
 
         this.layoutPanel = new JPanel();
         this.layoutPanel.setLayout(new BoxLayout(this.layoutPanel, BoxLayout.Y_AXIS));
+        this.layoutPanel.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+
+        var scroll = new JScrollPane(layoutPanel);
+        scroll.setBorder(null);
+        scroll.getVerticalScrollBar().setUnitIncrement(16);
 
         addPotionPanels();
+
         pricingPanel.add(buttonBar, BorderLayout.NORTH);
-        pricingPanel.add(this.layoutPanel, BorderLayout.CENTER);
+        pricingPanel.add(scroll, BorderLayout.CENTER);
 
         return pricingPanel;
     }
@@ -145,14 +152,12 @@ public class PotionFlipperPanel extends PluginPanel
         potionPanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 2));
 
         var threeDoseItemPrice = getDataById(threeDose.id);
-        var threeDosePanel = getJPanelPotion(threeDose.name, threeDoseItemPrice);
-
         var fourDoseItemPrice = getDataById(fourDose.id);
+        var threeDosePanel = getJPanelPotion(threeDose.name, threeDoseItemPrice);
         var fourDosePanel = getJPanelPotion(fourDose.name, fourDoseItemPrice);
 
         var profit3to4Dose = getJPanelCalculated("Tree to Four Dose Profit",
                 calculateProfit3To4(threeDoseItemPrice, fourDoseItemPrice));
-
         var profit4to3Dose = getJPanelCalculated("Four to Three Dose Profit",
                 calculateProfit4To3(fourDoseItemPrice, threeDoseItemPrice));
 
@@ -160,6 +165,10 @@ public class PotionFlipperPanel extends PluginPanel
         potionPanel.add(fourDosePanel);
         potionPanel.add(profit3to4Dose);
         potionPanel.add(profit4to3Dose);
+
+        Dimension pref = potionPanel.getPreferredSize();
+        potionPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, pref.height));
+        potionPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         return potionPanel;
     }
@@ -196,6 +205,7 @@ public class PotionFlipperPanel extends PluginPanel
     {
         var label = new JLabel(text);
         label.setForeground(Color.WHITE);
+        label.setFont(new Font("Arial", Font.BOLD, 13));
 
         return label;
     }
@@ -276,6 +286,9 @@ public class PotionFlipperPanel extends PluginPanel
                 {
                     SwingUtilities.invokeLater(() -> layoutPanel.removeAll());
                     generatePricings();
+
+                    layoutPanel.revalidate();
+                    layoutPanel.repaint();
                 }
                 catch (Exception e)
                 {
@@ -297,9 +310,6 @@ public class PotionFlipperPanel extends PluginPanel
                             JOptionPane.ERROR_MESSAGE
                     );
                 }
-
-                layoutPanel.revalidate();
-                layoutPanel.repaint();
             }
         }.execute();
     }
