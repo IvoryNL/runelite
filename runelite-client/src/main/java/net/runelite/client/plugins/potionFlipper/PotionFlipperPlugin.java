@@ -33,6 +33,8 @@ public class PotionFlipperPlugin extends Plugin
     @Inject
     private SelectPotionsPanel selectPotionsPanel;
     @Inject
+    private ManualCalculationPanel manualCalculationPanel;
+    @Inject
     private Gson gson;
 
     private NavigationButton navPotionFlipper;

@@ -2,6 +2,8 @@ package net.runelite.client.plugins.potionFlipper;
 
 import com.google.gson.Gson;
 import net.runelite.client.plugins.potionFlipper.Constants.Urls;
+import net.runelite.client.plugins.potionFlipper.Helpers.JElementHelper;
+import net.runelite.client.plugins.potionFlipper.Helpers.ProfitCalculatorHelper;
 import net.runelite.client.plugins.potionFlipper.Interfaces.IHttpService;
 import net.runelite.client.plugins.potionFlipper.Interfaces.ISelectedPotionsService;
 import net.runelite.client.ui.ColorScheme;
@@ -18,10 +20,12 @@ import java.util.Map;
 public class PotionFlipperPanel extends PluginPanel
 {
     private static final String CARD_PRICING = "PRICING";
-    private static final String CARD_SELECT   = "SELECT";
+    private static final String CARD_SELECT = "SELECT";
+    private static final String CARD_MANUAL = "MANUAL";
 
     private final IHttpService httpService;
     private final SelectPotionsPanel selectPotionsPanel;
+    private final ManualCalculationPanel manualCalculationPanel;
     private final ISelectedPotionsService selectedPotionsService;
     private final Gson gson;
 
@@ -30,12 +34,15 @@ public class PotionFlipperPanel extends PluginPanel
     private ArrayList<ItemInfo> selectedItems;
 
     @Inject
-    public PotionFlipperPanel(IHttpService httpService, SelectPotionsPanel selectPotionsPanel, ISelectedPotionsService selectedPotionsService, Gson gson) throws IOException
+    public PotionFlipperPanel(IHttpService httpService, SelectPotionsPanel selectPotionsPanel,
+                              ISelectedPotionsService selectedPotionsService, Gson gson,
+                              ManualCalculationPanel manualCalculationPanel) throws IOException
     {
         super();
 
         this.httpService = httpService;
         this.selectPotionsPanel = selectPotionsPanel;
+        this.manualCalculationPanel = manualCalculationPanel;
         this.selectedPotionsService = selectedPotionsService;
         this.gson = gson;
         this.selectedItems = this.selectedPotionsService.getSelectedPotions();
@@ -60,6 +67,7 @@ public class PotionFlipperPanel extends PluginPanel
         cards.setBackground(ColorScheme.DARKER_GRAY_COLOR);
         cards.add(buildPotionPricingPanel(), CARD_PRICING);
         cards.add(buildSelectPotionsPanel(), CARD_SELECT);
+        cards.add(buildManualCalculationPanel(), CARD_MANUAL);
 
         ((CardLayout) cards.getLayout()).show(cards, CARD_PRICING);
     }
@@ -69,15 +77,20 @@ public class PotionFlipperPanel extends PluginPanel
         var pricingPanel = new JPanel(new BorderLayout());
         pricingPanel.setBackground(ColorScheme.DARKER_GRAY_COLOR);
 
-        var updatePricingPanel = createButton("Update", "Update the potion pricing data from the API");
+        var updatePricingPanel = JElementHelper.createButton("Update", "Update the potion pricing data from the API");
         updatePricingPanel.addActionListener(e -> updatePricingPanel());
 
-        var potionSelect = createButton("Select", "Select potions to flip");
+        var potionSelect = JElementHelper.createButton("Select", "Select potions to flip");
         potionSelect.addActionListener(e -> ((CardLayout) cards.getLayout()).show(cards, CARD_SELECT));
+
+        var manualCalc = JElementHelper.createButton("Manual", "Go to manual calculation panel");
+        manualCalc.addActionListener(e -> ((CardLayout) cards.getLayout()).show(cards, CARD_MANUAL));
 
         var buttonBar = createButtonBar();
         buttonBar.add(updatePricingPanel, BorderLayout.WEST);
-        buttonBar.add(potionSelect, BorderLayout.EAST);
+        buttonBar.add(potionSelect, BorderLayout.CENTER);
+        buttonBar.add(manualCalc, BorderLayout.EAST);
+
 
         this.layoutPanel = new JPanel();
         this.layoutPanel.setLayout(new BoxLayout(this.layoutPanel, BoxLayout.Y_AXIS));
@@ -103,20 +116,7 @@ public class PotionFlipperPanel extends PluginPanel
         return buttonBar;
     }
 
-    private JButton createButton(String text, String toolTip)
-    {
-        var buttonPadding = BorderFactory.createEmptyBorder(5, 5, 5, 5);
-        var buttonBorder = BorderFactory.createLineBorder(new Color(0, 0, 0), 2);
-        var buttonCompound = BorderFactory.createCompoundBorder(buttonBorder, buttonPadding);
 
-        var button = new JButton(text);
-        button.setToolTipText(toolTip);
-        button.setBackground(ColorScheme.MEDIUM_GRAY_COLOR);
-        button.setForeground(Color.WHITE);
-        button.setBorder(buttonCompound);
-
-        return button;
-    }
 
     private JPanel buildSelectPotionsPanel()
     {
@@ -133,6 +133,16 @@ public class PotionFlipperPanel extends PluginPanel
         return selectPotionsPanel;
     }
 
+    private JPanel buildManualCalculationPanel()
+    {
+        var backButton = JElementHelper.createButton("Back", "Go back to the potion pricing panel");
+        backButton.addActionListener(e -> ((CardLayout) cards.getLayout()).show(cards, CARD_PRICING));
+
+        manualCalculationPanel.add(backButton, BorderLayout.NORTH);
+
+        return manualCalculationPanel;
+    }
+
     private void addPotionPanels() throws IOException
     {
         generatePricings();
@@ -145,11 +155,12 @@ public class PotionFlipperPanel extends PluginPanel
 
     private JPanel createPotionPanel(ItemInfo threeDose, ItemInfo fourDose) throws IOException
     {
-        var potionPanel = new JPanel();
-        potionPanel.setLayout(new BoxLayout(potionPanel, BoxLayout.Y_AXIS));
-        potionPanel.setBackground(ColorScheme.DARKER_GRAY_COLOR);
-        potionPanel.setForeground(Color.WHITE);
-        potionPanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 2));
+        var layoutPanel = new JPanel();
+        layoutPanel.setLayout(new BoxLayout(layoutPanel, BoxLayout.Y_AXIS));
+        layoutPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        layoutPanel.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+        layoutPanel.setForeground(Color.WHITE);
+        layoutPanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 2));
 
         var threeDoseItemPrice = getDataById(threeDose.id);
         var fourDoseItemPrice = getDataById(fourDose.id);
@@ -157,20 +168,17 @@ public class PotionFlipperPanel extends PluginPanel
         var fourDosePanel = getJPanelPotion(fourDose.name, fourDoseItemPrice);
 
         var profit3to4Dose = getJPanelCalculated("Tree to Four Dose Profit",
-                calculateProfit3To4(threeDoseItemPrice, fourDoseItemPrice));
-        var profit4to3Dose = getJPanelCalculated("Four to Three Dose Profit",
-                calculateProfit4To3(fourDoseItemPrice, threeDoseItemPrice));
+                ProfitCalculatorHelper.calculateProfit3To4(threeDoseItemPrice.low, fourDoseItemPrice.low));
 
-        potionPanel.add(threeDosePanel);
-        potionPanel.add(fourDosePanel);
-        potionPanel.add(profit3to4Dose);
-        potionPanel.add(profit4to3Dose);
+        layoutPanel.add(threeDosePanel);
+        layoutPanel.add(fourDosePanel);
+        layoutPanel.add(profit3to4Dose);
 
-        Dimension pref = potionPanel.getPreferredSize();
-        potionPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, pref.height));
-        potionPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        Dimension pref = layoutPanel.getPreferredSize();
+        layoutPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, pref.height));
+        layoutPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        return potionPanel;
+        return layoutPanel;
     }
 
     private JPanel getJPanelPotion(String potionName, ItemPrice ItemPrice)
@@ -241,22 +249,6 @@ public class PotionFlipperPanel extends PluginPanel
         }
 
         return mappedItems;
-    }
-
-    private int calculateProfit3To4(ItemPrice threeDose, ItemPrice fourDose)
-    {
-        var priceFourDoseTaxDeducted = (int)(fourDose.low / 1.01);
-        var priceThreeDoseTimesToFourDoses = threeDose.low / 3 * 4;
-
-        return priceFourDoseTaxDeducted - priceThreeDoseTimesToFourDoses;
-    }
-
-    private int calculateProfit4To3(ItemPrice fourDose, ItemPrice threeDose)
-    {
-        var priceThreeDoseTaxDeducted = (int)(threeDose.low / 1.01);
-        var priceFourDoseTimesToFourDoses = fourDose.low / 4 * 3;
-
-        return priceThreeDoseTaxDeducted - priceFourDoseTimesToFourDoses;
     }
 
     private void generatePricings() throws IOException
