@@ -33,10 +33,10 @@ import net.runelite.api.Client;
 import net.runelite.api.EnumComposition;
 import net.runelite.api.EnumID;
 import net.runelite.api.ItemComposition;
-import net.runelite.api.ItemID;
 import net.runelite.api.Point;
-import net.runelite.api.Varbits;
 import net.runelite.api.annotations.Varbit;
+import net.runelite.api.gameval.ItemID;
+import net.runelite.api.gameval.VarbitID;
 import net.runelite.api.widgets.WidgetItem;
 import net.runelite.client.game.ItemManager;
 import static net.runelite.client.plugins.runepouch.RunepouchConfig.RunepouchOverlayMode.BOTH;
@@ -51,12 +51,14 @@ import net.runelite.client.util.ImageUtil;
 
 class RunepouchOverlay extends WidgetItemOverlay
 {
-	private static final int NUM_SLOTS = 4;
+	private static final int NUM_SLOTS = 6;
 	private static final int[] AMOUNT_VARBITS = {
-		Varbits.RUNE_POUCH_AMOUNT1, Varbits.RUNE_POUCH_AMOUNT2, Varbits.RUNE_POUCH_AMOUNT3, Varbits.RUNE_POUCH_AMOUNT4
+		VarbitID.RUNE_POUCH_QUANTITY_1, VarbitID.RUNE_POUCH_QUANTITY_2, VarbitID.RUNE_POUCH_QUANTITY_3, VarbitID.RUNE_POUCH_QUANTITY_4,
+		VarbitID.RUNE_POUCH_QUANTITY_5, VarbitID.RUNE_POUCH_QUANTITY_6
 	};
 	private static final int[] RUNE_VARBITS = {
-		Varbits.RUNE_POUCH_RUNE1, Varbits.RUNE_POUCH_RUNE2, Varbits.RUNE_POUCH_RUNE3, Varbits.RUNE_POUCH_RUNE4
+		VarbitID.RUNE_POUCH_TYPE_1, VarbitID.RUNE_POUCH_TYPE_2, VarbitID.RUNE_POUCH_TYPE_3, VarbitID.RUNE_POUCH_TYPE_4,
+		VarbitID.RUNE_POUCH_TYPE_5, VarbitID.RUNE_POUCH_TYPE_6
 	};
 	private static final int IMAGE_SIZE = 11;
 	private static final BufferedImage[] RUNE_IMAGES = {
@@ -80,7 +82,9 @@ class RunepouchOverlay extends WidgetItemOverlay
 		ImageUtil.loadImageResource(RunepouchOverlay.class, "lava_rune.png"),
 		ImageUtil.loadImageResource(RunepouchOverlay.class, "steam_rune.png"),
 		ImageUtil.loadImageResource(RunepouchOverlay.class, "smoke_rune.png"),
-		ImageUtil.loadImageResource(RunepouchOverlay.class, "wrath_rune.png")
+		ImageUtil.loadImageResource(RunepouchOverlay.class, "wrath_rune.png"),
+		ImageUtil.loadImageResource(RunepouchOverlay.class, "sunfire_rune.png"),
+		ImageUtil.loadImageResource(RunepouchOverlay.class, "aether_rune.png"),
 	};
 
 	private final Client client;
@@ -102,8 +106,8 @@ class RunepouchOverlay extends WidgetItemOverlay
 	@Override
 	public void renderItemOverlay(Graphics2D graphics, int itemId, WidgetItem widgetItem)
 	{
-		if (itemId != ItemID.RUNE_POUCH && itemId != ItemID.RUNE_POUCH_L
-			&& itemId != ItemID.DIVINE_RUNE_POUCH && itemId != ItemID.DIVINE_RUNE_POUCH_L)
+		if (itemId != ItemID.BH_RUNE_POUCH && itemId != ItemID.BH_RUNE_POUCH_TROUVER
+			&& itemId != ItemID.DIVINE_RUNE_POUCH && itemId != ItemID.DIVINE_RUNE_POUCH_TROUVER)
 		{
 			return;
 		}
@@ -143,7 +147,7 @@ class RunepouchOverlay extends WidgetItemOverlay
 			}
 			else
 			{
-				renderGrid(graphics, widgetItem, runeIds, amounts);
+				renderGrid(graphics, widgetItem, runeIds, amounts, num);
 			}
 		}
 
@@ -213,9 +217,10 @@ class RunepouchOverlay extends WidgetItemOverlay
 		}
 	}
 
-	private void renderGrid(Graphics2D graphics, WidgetItem widgetItem, int[] runeIds, int[] amounts)
+	private void renderGrid(Graphics2D graphics, WidgetItem widgetItem, int[] runeIds, int[] amounts, int numRunes)
 	{
 		final Point location = widgetItem.getCanvasLocation();
+		int c = 0;
 		for (int i = 0; i < NUM_SLOTS; ++i)
 		{
 			final int runeId = runeIds[i];
@@ -226,8 +231,11 @@ class RunepouchOverlay extends WidgetItemOverlay
 				continue;
 			}
 
-			final int iconX = location.getX() + 2 + (i == 1 || i == 3 ? IMAGE_SIZE + 2 /* pad */ + 2 /* bar offset */ : 0);
-			final int iconY = location.getY() + 5 + (i >= 2 ? IMAGE_SIZE + 2 /* pad */ : 0);
+			final int iconX = location.getX() + 2 + (c % 2 == 1 ? IMAGE_SIZE + 2 /* pad */ + 2 /* bar offset */ : 0);
+			final int iconY = numRunes > 4 ?
+				location.getY() - 1 + (c / 2) * IMAGE_SIZE :
+				location.getY() + 5 + (c >= 2 ? IMAGE_SIZE + 2 /* pad */ : 0);
+			c++;
 
 			BufferedImage image = getRuneImage(runeId);
 			if (image != null)

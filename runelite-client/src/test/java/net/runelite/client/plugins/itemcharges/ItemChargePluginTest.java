@@ -30,11 +30,11 @@ import com.google.inject.testing.fieldbinder.Bind;
 import com.google.inject.testing.fieldbinder.BoundFieldModule;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
-import net.runelite.api.InventoryID;
 import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
-import net.runelite.api.ItemID;
 import net.runelite.api.events.ChatMessage;
+import net.runelite.api.gameval.InventoryID;
+import net.runelite.api.gameval.ItemID;
 import net.runelite.client.Notifier;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.game.ItemManager;
@@ -44,6 +44,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -99,6 +100,9 @@ public class ItemChargePluginTest
 	private static final String CHECK_BLOOD_ESSENCE = "Your blood essence has 56 charges remaining";
 	private static final String CHECK_BRACELET_OF_CLAY = "You can mine 13 more pieces of soft clay before your bracelet crumbles to dust.";
 	private static final String USED_BRACELET_OF_CLAY = "You manage to mine some clay.";
+
+	private static final String USED_BRACELET_OF_CLAY_TRAHAEARN = "You manage to mine some soft clay.";
+
 	private static final String BREAK_BRACELET_OF_CLAY = "Your bracelet of clay crumbles to dust.";
 
 	@Mock
@@ -194,7 +198,7 @@ public class ItemChargePluginTest
 		when(configManager.getRSProfileConfiguration(ItemChargeConfig.GROUP, ItemChargeConfig.KEY_RING_OF_FORGING, Integer.class)).thenReturn(90);
 		// Create equipment inventory with ring of forging
 		ItemContainer equipmentItemContainer = mock(ItemContainer.class);
-		when(client.getItemContainer(InventoryID.EQUIPMENT)).thenReturn(equipmentItemContainer);
+		when(client.getItemContainer(InventoryID.WORN)).thenReturn(equipmentItemContainer);
 		when(equipmentItemContainer.contains(ItemID.RING_OF_FORGING)).thenReturn(true);
 		when(equipmentItemContainer.getItems()).thenReturn(new Item[0]);
 		// Run message
@@ -208,7 +212,7 @@ public class ItemChargePluginTest
 	{
 		// Create equipment inventory with ring of forging
 		ItemContainer equipmentItemContainer = mock(ItemContainer.class);
-		when(client.getItemContainer(InventoryID.EQUIPMENT)).thenReturn(equipmentItemContainer);
+		when(client.getItemContainer(InventoryID.WORN)).thenReturn(equipmentItemContainer);
 		when(equipmentItemContainer.contains(ItemID.RING_OF_FORGING)).thenReturn(true);
 		when(equipmentItemContainer.getItems()).thenReturn(new Item[0]);
 		// Run message to break ring and then use ring, to simulate actual client behavior
@@ -487,8 +491,8 @@ public class ItemChargePluginTest
 		when(configManager.getRSProfileConfiguration(ItemChargeConfig.GROUP, ItemChargeConfig.KEY_BRACELET_OF_CLAY, Integer.class)).thenReturn(25);
 		// Create equipment inventory with bracelet of clay
 		ItemContainer equipmentItemContainer = mock(ItemContainer.class);
-		when(client.getItemContainer(InventoryID.EQUIPMENT)).thenReturn(equipmentItemContainer);
-		when(equipmentItemContainer.contains(ItemID.BRACELET_OF_CLAY)).thenReturn(true);
+		when(client.getItemContainer(InventoryID.WORN)).thenReturn(equipmentItemContainer);
+		when(equipmentItemContainer.contains(ItemID.JEWL_BRACELET_OF_CLAY)).thenReturn(true);
 		when(equipmentItemContainer.getItems()).thenReturn(new Item[0]);
 		// Run message
 		ChatMessage chatMessage = new ChatMessage(null, ChatMessageType.GAMEMESSAGE, "", USED_BRACELET_OF_CLAY, "", 0);
@@ -502,5 +506,52 @@ public class ItemChargePluginTest
 		ChatMessage chatMessage = new ChatMessage(null, ChatMessageType.GAMEMESSAGE, "", BREAK_BRACELET_OF_CLAY, "", 0);
 		itemChargePlugin.onChatMessage(chatMessage);
 		verify(configManager).setRSProfileConfiguration(ItemChargeConfig.GROUP, ItemChargeConfig.KEY_BRACELET_OF_CLAY, 28);
+	}
+	@Test
+	public void testBraceletOfClayUseTrahaearn()
+	{
+		// Set bracelet of clay charges to 13
+		when(configManager.getRSProfileConfiguration(ItemChargeConfig.GROUP, ItemChargeConfig.KEY_BRACELET_OF_CLAY, Integer.class))
+			.thenReturn(13);
+
+		// Equip bracelet of clay
+		ItemContainer equipmentItemContainer = mock(ItemContainer.class);
+		when(client.getItemContainer(InventoryID.WORN))
+			.thenReturn(equipmentItemContainer);
+		when(equipmentItemContainer.contains(ItemID.JEWL_BRACELET_OF_CLAY)).thenReturn(true);
+		when(equipmentItemContainer.getItems()).thenReturn(new Item[0]);
+
+		// Set inventory to 2 free slots
+		ItemContainer inventoryItemContainer = mock(ItemContainer.class);
+		when(inventoryItemContainer.count()).thenReturn(26);
+		when(client.getItemContainer(InventoryID.INV)).thenReturn(inventoryItemContainer);
+
+		// Verify bracelet of clay charges decreased
+		ChatMessage chatMessage = new ChatMessage(null, ChatMessageType.GAMEMESSAGE, "", USED_BRACELET_OF_CLAY_TRAHAEARN, "", 0);
+		itemChargePlugin.onChatMessage(chatMessage);
+		verify(configManager).setRSProfileConfiguration(ItemChargeConfig.GROUP, ItemChargeConfig.KEY_BRACELET_OF_CLAY, 12);
+	}
+
+	@Test
+	public void testBraceletOfClayUseTrahaearn1FreeInvSlot()
+	{
+		// Equip bracelet of clay
+		ItemContainer equipmentItemContainer = mock(ItemContainer.class);
+		when(client.getItemContainer(InventoryID.WORN))
+			.thenReturn(equipmentItemContainer);
+		when(equipmentItemContainer.contains(ItemID.JEWL_BRACELET_OF_CLAY))
+			.thenReturn(true);
+
+		// Set inventory to 1 free slots
+		ItemContainer inventoryItemContainer = mock(ItemContainer.class);
+		when(inventoryItemContainer.count())
+			.thenReturn(27);
+		when(client.getItemContainer(InventoryID.INV))
+			.thenReturn(inventoryItemContainer);
+
+		// Verify bracelet of clay charges were not changed
+		ChatMessage chatMessage = new ChatMessage(null, ChatMessageType.GAMEMESSAGE, "", USED_BRACELET_OF_CLAY_TRAHAEARN, "", 0);
+		itemChargePlugin.onChatMessage(chatMessage);
+		verify(configManager, Mockito.times(0)).setRSProfileConfiguration(Mockito.anyString(), Mockito.anyString(), Mockito.anyInt());
 	}
 }

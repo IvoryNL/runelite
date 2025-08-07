@@ -31,10 +31,15 @@ public interface Animation
 {
 	/**
 	 * Get the id for this animation
-	 * @see AnimationID
+	 * @see net.runelite.api.gameval.AnimationID
 	 * @return
 	 */
 	int getId();
+
+	/**
+	 * Is this animation a newer-style "maya" animation
+	 */
+	boolean isMayaAnim();
 
 	/**
 	 * Get how many distinct frames this animation has.
@@ -43,4 +48,31 @@ public interface Animation
 	 * animations, this is how many keyframes it has, not it's duration in ticks.
 	 */
 	int getNumFrames();
+
+	/**
+	 * How this animation behaves when its restarted during playback
+	 */
+	int getRestartMode();
+
+	/**
+	 * @see #getRestartMode()
+	 */
+	void setRestartMode(int restartMode);
+
+	/**
+	 * How many frames the animation lasts
+	 */
+	int getDuration();
+
+	/**
+	 * How many frames to go back when looping
+	 */
+	int getFrameStep();
+
+	/**
+	 * How many ticks each frame is.
+	 *
+	 * {@code null} for {@link #isMayaAnim()} animations
+	 */
+	int[] getFrameLengths();
 }
