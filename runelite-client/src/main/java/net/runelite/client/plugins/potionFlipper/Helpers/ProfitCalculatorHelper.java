@@ -2,11 +2,21 @@ package net.runelite.client.plugins.potionFlipper.Helpers;
 
 public final class ProfitCalculatorHelper
 {
-    public static int calculateProfit3To4(int threeDosePrice, int fourDosePrice)
-    {
-        var priceThreeDoseToFourDoses = threeDosePrice / 3 * 4;
-        var tax = 1.02f;
+    private final static float tax = 0.98f;
 
-        return (int)((fourDosePrice / tax) - priceThreeDoseToFourDoses);
+    public static int calculateProfit3To4(int threeDosePriceHigh, int fourDosePriceLow)
+    {
+        var cost = threeDosePriceHigh / 3f * 4;
+        var sellPrice = fourDosePriceLow * tax;
+
+        return (int)(sellPrice - cost);
+    }
+
+    public static int calculateProfit4To3(int fourDosePriceHigh, int threeDosePriceLow)
+    {
+        var cost = fourDosePriceHigh / 4f * 3;
+        var sellPrice = threeDosePriceLow  * tax ;
+
+        return (int)(sellPrice - cost);
     }
 }

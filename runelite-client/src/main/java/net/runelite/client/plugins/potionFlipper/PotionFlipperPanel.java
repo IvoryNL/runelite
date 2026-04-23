@@ -167,11 +167,14 @@ public class PotionFlipperPanel extends PluginPanel
         var fourDosePanel = getJPanelPotion(fourDose.name, fourDoseItemPrice);
 
         var profit3to4Dose = getJPanelCalculated("Tree to Four Dose Profit",
-                ProfitCalculatorHelper.calculateProfit3To4(threeDoseItemPrice.low, fourDoseItemPrice.low));
+                ProfitCalculatorHelper.calculateProfit3To4(threeDoseItemPrice.high, fourDoseItemPrice.low));
+        var profit4to3Dose = getJPanelCalculated("Four to Three Dose Profit",
+                ProfitCalculatorHelper.calculateProfit4To3(fourDoseItemPrice.high, threeDoseItemPrice.low));
 
         layoutPanel.add(threeDosePanel);
         layoutPanel.add(fourDosePanel);
         layoutPanel.add(profit3to4Dose);
+        layoutPanel.add(profit4to3Dose);
 
         Dimension pref = layoutPanel.getPreferredSize();
         layoutPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, pref.height));

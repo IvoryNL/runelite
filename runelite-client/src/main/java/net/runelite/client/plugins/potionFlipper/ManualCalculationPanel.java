@@ -10,9 +10,8 @@ import java.awt.*;
 
 public class ManualCalculationPanel extends PluginPanel
 {
-    private final float FONT_SIZE = 13f;
-
-    private JLabel calculationResultLabel;
+    private JLabel calculationResult3to4Label;
+    private JLabel calculationResult4to3Label;
     private JTextField threeDoseTextField;
     private JTextField fourDoseTextField;
     private JTextField quantityTextField;
@@ -31,14 +30,19 @@ public class ManualCalculationPanel extends PluginPanel
         layoutPanel.setBackground(ColorScheme.DARKER_GRAY_COLOR);
         layoutPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
+        float FONT_SIZE = 13f;
         var threeDoseLabel = JElementHelper.createLabel("Three Dose Price:", FONT_SIZE);
         threeDoseLabel.setMaximumSize(new Dimension(Integer.MAX_VALUE, threeDoseLabel.getPreferredSize().height));
         var fourDoseLabel = JElementHelper.createLabel("Four Dose Price:", FONT_SIZE);
         fourDoseLabel.setMaximumSize(new Dimension(Integer.MAX_VALUE, fourDoseLabel.getPreferredSize().height));
-        var calculationLabel = JElementHelper.createLabel("Profit Calculation:", FONT_SIZE);
-        calculationLabel.setMaximumSize(new Dimension(Integer.MAX_VALUE, calculationLabel.getPreferredSize().height));
-        calculationResultLabel = JElementHelper.createLabel("...", FONT_SIZE);
-        calculationResultLabel.setMaximumSize(new Dimension(Integer.MAX_VALUE, calculationResultLabel.getPreferredSize().height));
+        var calculation3to4Label = JElementHelper.createLabel("Profit Calculation 3 to 4 doses:", FONT_SIZE);
+        calculation3to4Label.setMaximumSize(new Dimension(Integer.MAX_VALUE, calculation3to4Label.getPreferredSize().height));
+        var calculation4to3Label = JElementHelper.createLabel("Profit Calculation 4 to 3 doses:", FONT_SIZE);
+        calculation4to3Label.setMaximumSize(new Dimension(Integer.MAX_VALUE, calculation4to3Label.getPreferredSize().height));
+        calculationResult3to4Label = JElementHelper.createLabel("...", FONT_SIZE);
+        calculationResult3to4Label.setMaximumSize(new Dimension(Integer.MAX_VALUE, calculationResult3to4Label.getPreferredSize().height));
+        calculationResult4to3Label = JElementHelper.createLabel("...", FONT_SIZE);
+        calculationResult4to3Label.setMaximumSize(new Dimension(Integer.MAX_VALUE, calculationResult4to3Label.getPreferredSize().height));
         var quantityLabel = JElementHelper.createLabel("Quantity:", FONT_SIZE);
 
         threeDoseTextField = JElementHelper.createTextField();
@@ -58,8 +62,10 @@ public class ManualCalculationPanel extends PluginPanel
         layoutPanel.add(fourDoseTextField);
         layoutPanel.add(quantityLabel);
         layoutPanel.add(quantityTextField);
-        layoutPanel.add(calculationLabel);
-        layoutPanel.add(calculationResultLabel);
+        layoutPanel.add(calculation3to4Label);
+        layoutPanel.add(calculationResult3to4Label);
+        layoutPanel.add(calculation4to3Label);
+        layoutPanel.add(calculationResult4to3Label);
         layoutPanel.add(calculateButton);
 
         add(layoutPanel);
@@ -73,34 +79,42 @@ public class ManualCalculationPanel extends PluginPanel
 
         if (threeDosePrice.isEmpty() || fourDosePrice.isEmpty())
         {
-            updateCalculationResult("Please enter both prices.");
+            var errorMessage = "Please enter both prices.";
+            updateCalculationResult(errorMessage, errorMessage);
             return;
         }
 
         if (quantity.isEmpty())
         {
-            updateCalculationResult("Please enter a quantity.");
+            var errorMessage = "Please enter a quantity.";
+            updateCalculationResult(errorMessage, errorMessage);
             return;
         }
 
         if (!threeDosePrice.matches("\\d+") || !fourDosePrice.matches("\\d+") || !quantity.matches("\\d+"))
         {
-            updateCalculationResult("Please enter valid numeric values.");
+            var errorMessage = "Please enter valid numeric values.";
+            updateCalculationResult(errorMessage, errorMessage);
             return;
         }
 
-        var result = ProfitCalculatorHelper.calculateProfit3To4(
+        var result3to4 = ProfitCalculatorHelper.calculateProfit3To4(
                 Integer.parseInt(threeDosePrice),
                 Integer.parseInt(fourDosePrice));
+        var result4to3 = ProfitCalculatorHelper.calculateProfit4To3(
+                Integer.parseInt(fourDosePrice),
+                Integer.parseInt(threeDosePrice));
         var quantityValue = Integer.parseInt(quantity);
-        var sumTotal = result * quantityValue;
+        var sumTotal3to4 = result3to4 * quantityValue;
+        var sumTotal4to3 = result4to3 * quantityValue;
 
-        updateCalculationResult(String.valueOf(sumTotal));
+        updateCalculationResult(String.valueOf(sumTotal3to4), String.valueOf(sumTotal4to3));
     }
 
-    private void updateCalculationResult(String result)
+    private void updateCalculationResult(String result3to4, String result4to3)
     {
-        calculationResultLabel.setText(result);
+        calculationResult3to4Label.setText(result3to4);
+        calculationResult4to3Label.setText(result4to3);
         repaint();
     }
 }
