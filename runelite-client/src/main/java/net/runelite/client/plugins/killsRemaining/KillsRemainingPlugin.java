@@ -110,7 +110,7 @@ public class KillsRemainingPlugin extends Plugin
             killsRemainingPanel.updateRemainingXp(remainingXp);
             if (maxHp != null)
             {
-                killsRemainingPanel.updateRemainingKills(remainingXp / (maxHp * 4));
+                killsRemainingPanel.updateRemainingKills(remainingXp / (maxHp * 4) + 1);
             }
         }
     }
